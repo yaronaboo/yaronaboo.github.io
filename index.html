@@ -3,147 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול משמרות</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
+    <title>מערכת ניהול משמרות | פאב אלפא</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // כאן יש להזין את הגדרות ה-Firebase שלך (Firebase Console -> Project Settings)
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArVAPqwzW10GfRHf5M16sjCaV5qb8_Zvg",
+            authDomain: "alfa-pub-shifts.firebaseapp.com",
+            projectId: "alfa-pub-shifts",
+            storageBucket: "alfa-pub-shifts.firebasestorage.app",
+            messagingSenderId: "667070974017",
+            appId: "1:667070974017:web:22c1d591f47da567e65ec0",
+            measurementId: "G-4V9S7411BV"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.onSnapshot = onSnapshot;
+        window.query = query;
+        window.orderBy = orderBy;
+    </script>
     <style>
-        :root {
-            --primary: #007bff;
-            --secondary: #6c757d;
-            --success: #28a745;
-            --danger: #dc3545;
-            --light: #f8f9fa;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--light); padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        h2, h3 { margin-top: 0; color: #333; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; }
-        .btn-danger { background: var(--danger); color: white; margin-top: 8px; }
-        .shift-item { border-right: 4px solid var(--primary); padding-right: 15px; margin-bottom: 15px; background: #fff; }
-        .admin-panel { border: 2px dashed var(--danger); display: none; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .badge-open { background: #e3f2fd; color: #0d47a1; }
-        .badge-taken { background: #f1f8e9; color: #33691e; }
+        body { font-family: system-ui, sans-serif; }
+        .admin-tab-content { display: none; }
+        .admin-tab-content.active { display: block; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-12">
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-lg z-50 hidden transition-opacity"></div>
 
-    <div id="login-section" class="card">
-        <h2>התחברות למערכת</h2>
-        <input type="text" id="username" placeholder="שם משתמש">
-        <select id="role-select">
-            <option value="עובד בר">עובד בר</option>
-            <option value="עובד מכירות">עובד מכירות</option>
-            <option value="מנהל בר">מנהל בר</option>
-            <option value="מנהל משמרת">מנהל משמרת (אדמין)</option>
-        </select>
-        <button class="btn-primary" onclick="login()">התחבר</button>
-    </div>
-
-    <div id="app-section" style="display:none;">
-        <div class="card">
-            <h3 id="welcome-msg"></h3>
-            <button class="btn-outline" onclick="logout()">התנתק</button>
-        </div>
-        
-        <div id="admin-panel" class="card admin-panel">
-            <h3>ניהול (אדמין בלבד)</h3>
-            <label>תאריך:</label>
-            <input type="date" id="shift-date">
-            <label>סוג תפקיד נדרש:</label>
-            <select id="shift-type">
-                <option value="עובד בר">עובד בר</option>
-                <option value="עובד מכירות">עובד מכירות</option>
-                <option value="מנהל בר">מנהל בר</option>
-                <option value="מנהל משמרת">מנהל משמרת</option>
-            </select>
-            <button class="btn-primary" onclick="createShift()">פרסם משמרת</button>
+    <div class="max-w-xl mx-auto p-4">
+        <div class="text-center mb-8">
+            <img src="alfa.jpg" onerror="this.style.display='none'; document.getElementById('logo-text').classList.remove('hidden')" class="w-24 h-24 mx-auto rounded-full object-cover border-4 border-amber-600">
+            <div id="logo-text" class="hidden w-24 h-24 mx-auto rounded-full bg-slate-900 text-amber-600 flex items-center justify-center font-bold">אלפא</div>
         </div>
 
-        <h3>לוח משמרות</h3>
-        <div id="shift-list"></div>
+        <div id="login-section" class="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <h1 class="text-2xl font-bold mb-6">פאב קהילתי אלפא</h1>
+            <input type="text" id="login-email" class="w-full mb-3 px-4 py-3 rounded-xl border" placeholder="אימייל">
+            <input type="password" id="login-password" class="w-full mb-6 px-4 py-3 rounded-xl border" placeholder="סיסמה">
+            <button onclick="handleLogin()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold">התחבר</button>
+        </div>
+
+        <div id="app-section" class="hidden">
+            <div id="admin-panel" class="bg-white p-5 rounded-2xl shadow-md border mb-6">
+                <div class="flex border-b mb-4 gap-2">
+                    <span class="px-4 py-2 text-sm font-bold border-b-2 border-amber-600">יצירת משמרת</span>
+                </div>
+                <div class="space-y-3">
+                    <input type="date" id="admin-shift-date" class="w-full px-3 py-2 border rounded-lg">
+                    <button onclick="saveShift()" class="w-full bg-amber-600 text-white py-2 rounded-lg font-bold">פרסם משמרת</button>
+                </div>
+            </div>
+            <h2 class="font-bold text-lg mb-3">משמרות קרובות</h2>
+            <div id="shifts-list" class="space-y-3"></div>
+        </div>
     </div>
 
     <script>
-        let currentUser = null;
-        let shifts = JSON.parse(localStorage.getItem('shifts')) || [];
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
+        };
 
-        function login() {
-            const user = document.getElementById('username').value;
-            const role = document.getElementById('role-select').value;
-            if(!user) return alert("אנא הזן שם משתמש");
-            
-            currentUser = { name: user, role: role, isAdmin: role === 'מנהל משמרת' };
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('app-section').style.display = 'block';
-            document.getElementById('welcome-msg').innerText = `שלום, ${user}`;
-            
-            if(currentUser.isAdmin) document.getElementById('admin-panel').style.display = 'block';
-            renderShifts();
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById('login-section').style.display = 'block';
-            document.getElementById('app-section').style.display = 'none';
-            document.getElementById('admin-panel').style.display = 'none';
-        }
-
-        function createShift() {
-            const date = document.getElementById('shift-date').value;
-            const type = document.getElementById('shift-type').value;
-            if(!date) return alert("בחר תאריך");
-            
-            shifts.push({ id: Date.now(), date, type, assigned: null });
-            saveAndRender();
-        }
-
-        function claimShift(id) {
-            const shift = shifts.find(s => s.id === id);
-            if(shift.type !== currentUser.role && !currentUser.isAdmin) {
-                return alert("משמרת זו מיועדת ל-" + shift.type + " בלבד");
+        window.handleLogin = () => {
+            if (document.getElementById('login-email').value === 'admin' && document.getElementById('login-password').value === 'alfapub') {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('hidden');
+                loadShifts();
+            } else {
+                showToast('פרטים שגויים');
             }
-            shift.assigned = currentUser.name;
-            saveAndRender();
-        }
+        };
 
-        function deleteShift(id) {
-            shifts = shifts.filter(s => s.id !== id);
-            saveAndRender();
-        }
-
-        function saveAndRender() {
-            localStorage.setItem('shifts', JSON.stringify(shifts));
-            renderShifts();
-        }
-
-        function renderShifts() {
-            const list = document.getElementById('shift-list');
-            list.innerHTML = '';
-            
-            if(shifts.length === 0) {
-                list.innerHTML = '<p>אין משמרות להצגה.</p>';
-                return;
+        window.saveShift = async () => {
+            const date = document.getElementById('admin-shift-date').value;
+            if(!date) return showToast('נא לבחור תאריך');
+            try {
+                await addDoc(collection(window.db, "shifts"), { date: date, createdAt: new Date() });
+                showToast('המשמרת נוספה לענן!');
+                document.getElementById('admin-shift-date').value = '';
+            } catch (e) {
+                showToast('שגיאה בשמירה');
             }
+        };
 
-            shifts.forEach(s => {
-                const isTaken = s.assigned !== null;
-                list.innerHTML += `
-                    <div class="card shift-item">
-                        <strong>${s.date}</strong><br>
-                        <span>תפקיד: ${s.type}</span><br>
-                        <span class="badge ${isTaken ? 'badge-taken' : 'badge-open'}">
-                            ${isTaken ? 'משובץ: ' + s.assigned : 'פנוי לשיבוץ'}
-                        </span>
-                        <div style="margin-top:10px;">
-                            ${!isTaken ? `<button class="btn-primary" onclick="claimShift(${s.id})">השתבץ עכשיו</button>` : ''}
-                            ${currentUser.isAdmin ? `<button class="btn-danger" onclick="deleteShift(${s.id})">מחק משמרת</button>` : ''}
+        function loadShifts() {
+            const q = query(collection(window.db, "shifts"), orderBy("date", "asc"));
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('shifts-list');
+                list.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border">
+                            <span class="font-bold text-slate-700">${data.date}</span>
+                            <button onclick="deleteDoc(doc(window.db, 'shifts', '${doc.id}'))" class="text-red-500 hover:text-red-700 text-sm">מחק</button>
                         </div>
-                    </div>
-                `;
+                    `;
+                });
             });
         }
     </script>
