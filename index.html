@@ -7,31 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // כאן יש להזין את הגדרות ה-Firebase שלך (Firebase Console -> Project Settings)
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyArVAPqwzW10GfRHf5M16sjCaV5qb8_Zvg",
-            authDomain: "alfa-pub-shifts.firebaseapp.com",
-            projectId: "alfa-pub-shifts",
-            storageBucket: "alfa-pub-shifts.firebasestorage.app",
-            messagingSenderId: "667070974017",
-            appId: "1:667070974017:web:22c1d591f47da567e65ec0",
-            measurementId: "G-4V9S7411BV"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        window.db = db;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
-        window.onSnapshot = onSnapshot;
-        window.query = query;
-        window.orderBy = orderBy;
+        import { firebaseConfig } from "./config.js"; // טעינה מהקובץ החיצוני
+        // ... המשך הקוד כרגיל
     </script>
     <style>
         body { font-family: system-ui, sans-serif; }
