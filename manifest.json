@@ -1,0 +1,15 @@
+{
+    "name": "Shift Manager",
+    "short_name": "Shifts",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#f8f9fa",
+    "theme_color": "#007bff",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/1063/1063376.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
